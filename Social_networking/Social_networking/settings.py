@@ -40,9 +40,7 @@ INSTALLED_APPS = [
     'account',
     'friends',
     'rest_framework',
-    'rest_framework.authtoken',
-    'django_ratelimit'
-    
+    'rest_framework.authtoken',    
     
 ]
 
@@ -54,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'friends.middleware.FriendRequestRateLimitMiddleware'
 ]
 
 ROOT_URLCONF = 'Social_networking.urls'
@@ -144,22 +143,26 @@ CACHES = {
         }
     }
 }
-
 REST_FRAMEWORK = {
-
-    'DEFAULT_THROTTLE_CLASSES': [
-
-        'rest_framework.throttling.UserRateThrottle'
-
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        # other authentication classes...
     ],
-
-    'DEFAULT_THROTTLE_RATES': {
-
-        'user': '3/min'
-
-    },
-    'THROTTLE_MESSAGES': {
-        'user': 'You Reach maximum limit of request . Retry after {wait} seconds.',
-    }
-
+    # other settings...
 }
+
+# REST_FRAMEWORK = {
+
+#     'DEFAULT_THROTTLE_CLASSES': [
+#         'rest_framework.throttling.UserRateThrottle'
+#     ],
+
+#     'DEFAULT_THROTTLE_RATES': {
+#         'user': '3/min'
+#     },
+
+#     'THROTTLE_MESSAGES': {
+#         'user': 'You reached the maximum limit of requests. Retry after {wait} seconds.',
+#     }
+
+# }

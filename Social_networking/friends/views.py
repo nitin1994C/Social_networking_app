@@ -10,17 +10,12 @@ from django.db.models import Q
 from rest_framework.throttling import UserRateThrottle
 
 
-
 class SendFriendRequestView(generics.CreateAPIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = FriendshipSerializer
-    throttle_classes = [UserRateThrottle]
-
-    
 
     def perform_create(self, serializer):
-        print(self.request)
         sender_id = self.request.data.get('sender')
         receiver_id = self.request.data.get('receiver')
 
@@ -28,15 +23,18 @@ class SendFriendRequestView(generics.CreateAPIView):
             sender = User.objects.get(id=sender_id)
             receiver = User.objects.get(id=receiver_id)
         except User.DoesNotExist:
-            # If the sender doesn't exist, use the authenticated user as the sender
-            sender = self.request.user
-
-        if not Friendship.objects.filter(sender=sender, receiver=receiver).exists():
-            serializer.save(sender=sender, receiver=receiver, status='pending')
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response({"detail": "Friend request already sent or users are already friends."},
+            # If the sender or receiver doesn't exist, return an error response
+            return Response({"detail": "Sender or receiver does not exist."},
                             status=status.HTTP_400_BAD_REQUEST)
+
+        # Create the Friendship object
+        friendship = Friendship.objects.create(sender=sender, receiver=receiver, status='pending')
+
+        # Serialize and return the response
+        serializer = FriendshipSerializer(friendship)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
 
 
 
@@ -65,18 +63,17 @@ class AcceptFriendRequestView(generics.UpdateAPIView):
         else:
             return Response({"detail": "No pending friend request from this user."}, status=status.HTTP_400_BAD_REQUEST)
 
+
 class RejectFriendRequestView(generics.DestroyAPIView):
     authentication_classes = [TokenAuthentication]
-
     permission_classes = [IsAuthenticated]
     serializer_class = FriendshipSerializer
+    queryset = Friendship.objects.all()  # Specify the queryset
 
     def destroy(self, request, *args, **kwargs):
         friendship = self.get_object()
-        # print(self.request.user)
-    
+
         if friendship.receiver == self.request.user and friendship.status == 'pending':
-           
             friendship.delete()
             return Response({"detail": "Friend request rejected."}, status=status.HTTP_204_NO_CONTENT)
         else:

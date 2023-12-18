@@ -9,7 +9,8 @@ from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.authentication import TokenAuthentication
-
+from django.db import models
+from django.db.models import Q
 
 
 class UserAPIView(generics.CreateAPIView):
@@ -35,18 +36,7 @@ class UserProfileAPIView(APIView):
 
 
 
-class UserLoginView(generics.CreateAPIView):
-    serializer_class = UserSerializer
 
-    def post(self, request, *args, **kwargs):
-        email = request.data.get('email')
-        password = request.data.get('password')
-        user = authenticate(request, email=email, password=password)
-        if user:
-            token, created = Token.objects.get_or_create(user=user)
-            return Response({'token': token.key, 'user_id': user.id})
-        else:
-            return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
         
 
 
@@ -58,7 +48,6 @@ class UserSearchPagination(PageNumberPagination):
 
 class UserSearchView(generics.ListAPIView):
     serializer_class = UserProfileSerializer
-    permission_classes = [IsAuthenticated]
     pagination_class = UserSearchPagination
 
     def get_queryset(self):
@@ -69,13 +58,11 @@ class UserSearchView(generics.ListAPIView):
 
         if search_query:
             # Check if the search query is a valid email
-            try:
-                user_profile = UserProfile.objects.get(user__email__iexact=search_query)
-                return UserProfile.objects.filter(id=user_profile.id)
-            except UserProfile.DoesNotExist:
-                pass
-
-            # If the search query is not a valid email, search by name containing the substring
-            queryset = queryset.filter(name__icontains=search_query)
+            queryset = UserProfile.objects.filter(
+        models.Q(name__icontains=search_query) | models.Q(user__email__icontains=search_query))
 
         return queryset
+
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
