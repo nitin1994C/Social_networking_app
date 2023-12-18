@@ -32,16 +32,20 @@ python manage.py runserver
 Open your web browser and go to http://localhost:8000 (or the specified port).
 
 API Endpoints:
+POST :api/user : signup user
+GET : api/userprofiles : list of users
+GET : /api/usersearch : user search 
+POST : 127.0.0.1:8000/token_auth/ : get token or login 
 
-POST /api/send_friend_request/: Send a friend request.
+POST: /ap/send_friend_request/: Send a friend request.
 
-POST /api/accept_friend_request/{request_id}/: Accept a friend request.
+PUT :/ap/accept_friend_request/{request_id}/: Accept a friend request.
 
-POST /api/reject_friend_request/{request_id}/: Reject a friend request.
+DELETE :/ap/reject_friend_request/{request_id}/: Reject a friend request.
 
-GET /api/list_friends/: List friends.
+GET :/ap/list_friends/: List friends.
 
-GET /api/list_pending_requests/: List pending friend requests.
+GET :/ap/list_pending_requests/: List pending friend requests.
 
 Add more endpoints as needed.
 Authentication
