@@ -7,10 +7,10 @@ Brief description of your project.
 
 1. **Clone the Repository:**
 
-git clone https://github.com/your-username/your-repository.git
+git clone https://github.com/nitin1994C/Social_networking_app.git
    
 2.Navigate to the Project Directory:
-cd your-repository
+cd Social_networking
 
 3.Create a Virtual Environment:
   python -m venv venv
